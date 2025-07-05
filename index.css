@@ -1,0 +1,493 @@
+@charset "UTF-8";
+
+@import url("https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&family=Geologica:wght@100..900&family=Oswald:wght@200..700");
+
+@layers system pages demonstration;
+
+@layer system {
+  section#pechatalka {
+    --width: 300px;
+    width: var(--width, 300px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+
+    > section.system {
+      display: none;
+    }
+
+    > nav.tools {
+      --menu-padding-x: 0.4rem;
+      margin-bottom: 0.5rem;
+      width: 100%;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      overflow: clip;
+      border: 2px solid var(--section-background-color-inverted);
+
+      > .button {
+        --padding-x: 0.8rem;
+        height: 100%;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: unset !important;
+        background-color: unset;
+
+        &:first-of-type:first-child {
+          padding-left: calc(
+            var(--padding-x, 0.6rem) + var(--menu-padding-x, 0.4rem)
+          ) !important;
+        }
+
+        &:last-of-type:last-child:not(:only-of-type) {
+          margin-left: auto;
+          padding-right: calc(
+            var(--padding-x, 0.6rem) + var(--menu-padding-x, 0.4rem)
+          ) !important;
+        }
+
+        > div.color {
+          --size: 1rem;
+          width: var(--size, 1rem);
+          height: var(--size, 1rem);
+          border-radius: 3px;
+          background-color: var(--color, var(--paper, var(--white, #fff)));
+
+          /* &:after {
+            content: "";
+            width: 100%;
+            height: 100%;
+            background-color: 2px solid var(--button-background-color-inverted);
+          } */
+        }
+      }
+    }
+
+    > section.canvas.pin {
+      --diameter-cut: var(--width, 300px);
+      --offset: calc(37 / 48 * 100);
+      --diameter-display: calc(var(--diameter-cut) * var(--offset) / 100);
+      position: relative;
+      width: var(--diameter-cut, 300px);
+      height: var(--diameter-cut, 300px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: clip;
+      border-radius: 100%;
+      border: 2px solid var(--background-color-inverted);
+      background-color: var(--paper, var(--white, #fff));
+
+      &:before {
+        z-index: 500;
+        position: absolute;
+        content: "";
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        opacity: 0;
+        background: radial-gradient(
+          1px,
+          transparent calc(var(--diameter-display, 77.08%) / 2),
+          #000a
+        );
+        transition: opacity 0.1s ease-out;
+      }
+
+      &:has(div.layer) {
+        &:before {
+          opacity: 1;
+          transition: opacity 0.4s cubic-bezier(0.5, 0, 0.5, 1);
+        }
+
+        > .button.add {
+          display: none;
+        }
+      }
+
+      > .button.add {
+        z-index: 0;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        border-radius: 100%;
+      }
+
+      > div.display {
+        z-index: 1000;
+        width: var(--diameter-display, 77.08%);
+        height: var(--diameter-display, 77.08%);
+        pointer-events: none;
+        border-radius: 100%;
+        border: 2px dashed var(--background-color-inverted);
+      }
+
+      > div.layer {
+        z-index: 100;
+        position: absolute;
+        min-width: 50%;
+        max-width: 200%;
+        width: calc(
+          var(--diameter-cut, var(--width, 100%)) + var(--width-zoom, 0px)
+        );
+        cursor: grab;
+
+        &:active {
+          cursor: grabbing;
+        }
+
+        > img {
+          width: 100%;
+          animation-name: added-image;
+          animation-duration: 0.4s;
+          animation-fill-mode: forwards;
+          animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+        }
+
+        > button.delete {
+          --offset: 5px;
+          --size: 40px;
+          z-index: 1500;
+          position: fixed;
+          margin-top: var(--offset);
+          margin-left: calc((var(--size, 40px) + var(--offset)) * -1);
+          width: var(--size, 40px);
+          height: var(--size, 40px);
+          display: inline-flex;
+          justify-content: center;
+          align-items: center;
+          mix-blend-mode: overlay;
+
+          &:hover {
+            mix-blend-mode: normal;
+          }
+        }
+      }
+    }
+
+    &:has(> section.canvas.pin > div.layer) {
+      > section.result {
+        > button.buy {
+          cursor: pointer !important;
+          filter: unset;
+        }
+      }
+    }
+
+    > section.result {
+      width: 100%;
+      display: flex;
+      /* justify-content: space-between; */
+      align-content: center;
+      gap: 1rem;
+
+      > button.print {
+        border: unset !important;
+      }
+
+      > span.cost {
+        margin-left: auto;
+        display: inline;
+        align-content: center;
+
+        /* &:before {
+          content: var(--localization-cost, "Cost") ":";
+          margin-right: 0.4rem;
+        } */
+
+        &:after {
+          content: var(--localization-currency, "$");
+          margin-left: 0.1rem;
+        }
+      }
+
+      > button.buy {
+        cursor: not-allowed !important;
+        filter: grayscale(1) brightness(0.6);
+
+        &:before {
+          content: var(--localization-buy, "Buy");
+        }
+      }
+    }
+  }
+}
+
+@layer animations {
+  @layer pin {
+    @keyframes added-image {
+      0% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+@layer demonstration {
+  @layer icons {
+    @layer plus {
+      i.icon.plus,
+      i.icon.plus::after {
+        display: block;
+        box-sizing: border-box;
+        background: currentColor;
+        border-radius: 10px;
+      }
+
+      i.icon.plus {
+        margin-top: -2px;
+        position: relative;
+        width: 16px;
+        height: 2px;
+
+        &:after {
+          content: "";
+          position: absolute;
+          width: 2px;
+          height: 16px;
+          top: -7px;
+          left: 7px;
+        }
+      }
+
+      i.icon.plus.small {
+        width: 10px;
+
+        &:after {
+          height: 10px;
+          top: -4px;
+          left: 4px;
+        }
+      }
+    }
+
+    @layer trash {
+      i.icon.trash {
+        box-sizing: border-box;
+        position: relative;
+        display: block;
+        width: 10px;
+        height: 12px;
+        border: 2px solid transparent;
+        box-shadow: 0 0 0 2px, inset -2px 0 0, inset 2px 0 0;
+        border-bottom-left-radius: 1px;
+        border-bottom-right-radius: 1px;
+        margin-top: 4px;
+
+        &:before,
+        &:after {
+          content: "";
+          display: block;
+          box-sizing: border-box;
+          position: absolute;
+        }
+
+        &:before {
+          width: 10px;
+          height: 4px;
+          border: 2px solid;
+          border-bottom: transparent;
+          border-top-left-radius: 2px;
+          border-top-right-radius: 2px;
+          top: -7px;
+          left: -2px;
+        }
+
+        &:after {
+          background: currentColor;
+          border-radius: 3px;
+          width: 16px;
+          height: 2px;
+          top: -4px;
+          left: -5px;
+        }
+      }
+
+      i.icon.trash.small {
+        height: 9px;
+      }
+    }
+
+    @layer printer {
+      i.icon.printer {
+        position: relative;
+        transform: scale(var(--ggs, 1));
+        width: 24px;
+        height: 14px;
+        box-sizing: border-box;
+        display: block;
+        border: 2px solid transparent;
+        border-bottom: 0;
+        background: linear-gradient(to left, currentColor 5px, transparent 0)
+            no-repeat 0 10px/6px 2px,
+          linear-gradient(to left, currentColor 5px, transparent 0) no-repeat
+            14px 10px/6px 2px,
+          linear-gradient(to left, currentColor 5px, transparent 0) no-repeat
+            4px 4px/2px 2px;
+        box-shadow: inset 0 2px 0, inset 2px 2px 0, inset -2px 2px 0,
+          inset -2px 2px 0;
+
+        &:before,
+        &:after {
+          position: absolute;
+          left: 4px;
+          content: "";
+          width: 12px;
+          box-sizing: border-box;
+          display: block;
+          border: 2px solid;
+        }
+
+        &:before {
+          top: -4px;
+          height: 6px;
+        }
+
+        &:after {
+          top: 8px;
+          height: 8px;
+        }
+      }
+    }
+  }
+
+  :root {
+    @layer colorscheme {
+      --text-color: #fff;
+      --text-color-inverted: #000;
+      --button-background-color-inverted: #fff;
+      --button-background-color: #000;
+      --section-background-color-inverted: #fff;
+      --section-background-color: #000;
+      --background-color: #000;
+      --background-color-inverted: #fff;
+
+      --red: red;
+      --white: #fff;
+
+      --paper: var(--white);
+    }
+
+    @layer localization {
+      @layer english {
+        --localization-button-next: "Next";
+        --localization-button-previous: "Previous";
+        --localization-empty: "Empty";
+
+        --localization-button-pins: "Pins";
+
+        --localization-cost: "Cost";
+        --localization-currency: "$";
+        --localization-buy: "Buy";
+      }
+
+      @layer russian {
+        --localization-button-next: "Далее";
+        --localization-button-previous: "Назад";
+        --localization-empty: "Пусто";
+
+        --localization-button-pins: "Значки";
+
+        --localization-cost: "Стоимость";
+        --localization-currency: "₽";
+        --localization-buy: "Купить";
+      }
+    }
+
+    font-family: "Geologica", sans-serif;
+    color: var(--text-color);
+  }
+
+  .unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .rounded {
+    border-radius: 0.75rem;
+  }
+
+  body {
+    margin: unset;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    overflow-x: clip;
+    background-color: var(--background-color);
+
+    > section#title {
+      margin-top: 60px;
+      position: relative;
+      height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      > h1 {
+        margin: unset;
+        font-family: "Cascadia Code";
+        font-size: 2.2rem;
+
+        & + small {
+          order: -1;
+          margin-bottom: -0.3rem;
+          font-family: "Geologica";
+          font-size: 0.9rem;
+          text-align: center;
+          color: var(--red, red);
+        }
+      }
+    }
+
+    > section#pechatalka {
+      width: 380px;
+      flex-grow: 1;
+    }
+  }
+
+  button,
+  .button {
+    padding: 0.4rem 0.8rem;
+    font-family: "Geologica", sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    border: 2px solid var(--button-background-color-inverted);
+    color: var(--text-color);
+    background-color: var(--button-background-color);
+
+    &:hover {
+      background-color: hsl(
+        from var(--button-background-color) h s 15%
+      ) !important;
+    }
+
+    &:active {
+      background-color: hsl(
+        from var(--button-background-color) h s 10%
+      ) !important;
+    }
+  }
+
+  section#wrap {
+    width: 60vw;
+  }
+}
