@@ -10,12 +10,18 @@
  * @public
  *
  * @example
- * import gallery from "https://codepen.io/mirzaev-sexy/pen/GgJbmQz.js";
+ * import pechatalka from "https://git.svoboda.works/mirzaev/pechatalka.mjs/raw/branch/stable/pechatalka.mjs";
  *
+ * // Initializing the instance
+ * const instance = new pechatalka(
+ *  document.getElementById("pechatalka"),
+ *  document.getElementById("pechatalka")?.querySelector(".canvas"),
+ *  document.getElementById("pechatalka")?.querySelector(".result"),
+ *  true
+ * );
  *
  * {@link https://git.svoboda.works/mirzaev/pechatalka.mjs}
  * {@link https://codepen.io/mirzaev-sexy/pen/GgJbmQz}
- *
  *
  * @license http://www.wtfpl.net/ Do What The Fuck You Want To Public License
  * @author Arsen Mirzaev Tatyano-Muradovich <arsen@mirzaev.sexy>
