@@ -38,10 +38,10 @@ document.getElementById('pechatalka')?.querySelector('label[for=\'pechatalka_bac
 ```js
 import("/js/modules/pechatalka.mjs").then((module) => {
   // Initializing the instance
-  new module.gallery(
-    document.getElementById("wrap"),
-    document.getElementById("images"),
-    document.getElementById("gallery"),
+  const instance = new module.pechatalka(
+    document.getElementById("pechatalka"),
+    document.getElementById("pechatalka")?.querySelector(".canvas"),
+    document.getElementById("pechatalka")?.querySelector(".result"),
     true
   );
 });
