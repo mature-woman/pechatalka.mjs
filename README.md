@@ -51,3 +51,6 @@ CSS in the `/index.css` file
 <p float="left">
   <img src="preview/1.gif" width="30%" />
 </p>
+
+## Projects
+1. Telegram chat-robot for Svoboda typography: [svoboda/pechatalka](https://git.svoboda.works/svoboda/pechatalka)
