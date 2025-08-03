@@ -27,357 +27,802 @@
  * @author Arsen Mirzaev Tatyano-Muradovich <arsen@mirzaev.sexy>
  */
 export default class pechatalka {
-  /**
-   * @name Wrap
-   *
-   * @type {HTMLElement}
-   *
-   * @protected
-   */
-  #wrap = document.getElementById("pechatalka");
+	/**
+	 * @name Wrap
+	 *
+	 * @type {HTMLElement}
+	 *
+	 * @protected
+	 */
+	#wrap = document.getElementById("pechatalka");
 
-  /**
-   * @name Wrap (get)
-   *
-   * @return {HTMLElement}
-   *
-   * @public
-   */
-  get wrap() {
-    return this.#wrap;
-  }
+	/**
+	 * @name Wrap (get)
+	 *
+	 * @return {HTMLElement}
+	 *
+	 * @public
+	 */
+	get wrap() {
+		return this.#wrap;
+	}
 
-  /**
-   * @name Canvas
-   *
-   * @type {HTMLElement}
-   *
-   * @protected
-   */
-  #canvas = document.getElementById("pechatalka")?.querySelector(".canvas");
+	/**
+	 * @name Canvas
+	 *
+	 * @type {HTMLElement}
+	 *
+	 * @protected
+	 */
+	#canvas = document.getElementById("pechatalka")?.querySelector(".canvas");
 
-  /**
-   * @name Canvas (get)
-   *
-   * @return {HTMLElement}
-   *
-   * @public
-   */
-  get canvas() {
-    return this.#canvas;
-  }
+	/**
+	 * @name Canvas (get)
+	 *
+	 * @return {HTMLElement}
+	 *
+	 * @public
+	 */
+	get canvas() {
+		return this.#canvas;
+	}
 
-  /**
-   * @name Result
-   *
-   * @type {HTMLElement}
-   *
-   * @protected
-   */
-  #result = document.getElementById("pechatalka")?.querySelector(".result");
+	/**
+	 * @name Result
+	 *
+	 * @type {HTMLElement}
+	 *
+	 * @protected
+	 */
+	#result = document.getElementById("pechatalka")?.querySelector(".result");
 
-  /**
-   * @name Result (get)
-   *
-   * @return {HTMLElement}
-   *
-   * @public
-   */
-  get result() {
-    return this.#result;
-  }
+	/**
+	 * @name Result (get)
+	 *
+	 * @return {HTMLElement}
+	 *
+	 * @public
+	 */
+	get result() {
+		return this.#result;
+	}
 
-  /**
-   * @name Layers
-   *
-   * @type {Set}
-   *
-   * @protected
-   */
-  #layers = new Set();
+	/**
+	 * @name Layers
+	 *
+	 * @type {Set}
+	 *
+	 * @protected
+	 */
+	#layers = new Set();
 
-  /**
-   * @name Layers (get)
-   *
-   * @return {Set}
-   *
-   * @public
-   */
-  get layers() {
-    return this.#layers;
-  }
+	/**
+	 * @name Layers (get)
+	 *
+	 * @return {Set}
+	 *
+	 * @public
+	 */
+	get layers() {
+		return this.#layers;
+	}
 
-  /**
-   * @name Cost
-   *
-   * @type {number}
-   *
-   * @protected
-   */
-  #cost = 0;
+	/**
+	 * @name Preset
+	 *
+	 * @description
+	 * Registry of parameters that will be write into created layers
+	 *
+	 * @type {Map}
+	 *
+	 * @protected
+	 */
+	#preset = new Map();
 
-  /**
-   * @name Cost (get)
-   *
-   * @return {number}
-   *
-   * @public
-   */
-  get cost() {
-    return this.#cost;
-  }
+	/**
+	 * @name Preset (get)
+	 *
+	 * @description
+	 * Registry of parameters that will be write into created layers
+	 *
+	 * @return {Map}
+	 *
+	 * @public
+	 */
+	get preset() {
+		return this.#preset;
+	}
 
-  /**
-   * @name Prices
-   *
-   * @description
-   * Prices for calculating the total cost
-   *
-   * @return {object}
-   *
-   * @public
-   */
-  prices = {
-    pin: {
-      image: 150
-    }
-  };
+	/**
+	 * @name Cost
+	 *
+	 * @description
+	 * The total cost
+	 *
+	 * @type {number}
+	 *
+	 * @protected
+	 */
+	#cost = 0;
 
-  /**
-   * @name Constructor
-   *
-   * @description
-   * Initialize the instance
-   *
-   * @param {HTMLElement} wrap The wrap element
-   * @param {HTMLElement} canvas The canvas element
-   * @param {HTMLElement} result The result element
-   * @param {boolean} [inject=false] Write the instance into the wrap element?
-   */
-  constructor(wrap, canvas, result, inject = false) {
-    if (wrap instanceof HTMLElement) {
-      // Initialized the wrap element
+	/**
+	 * @name Cost (set)
+	 *
+	 * @description
+	 * The total cost
+	 *
+	 * @return {number}
+	 *
+	 * @public
+	 */
+	set cost(value) {
+		if (typeof value === "number") {
+			// Validated the value
 
-      // Writing the wrap
-      this.#wrap = wrap;
+			// Initializing the deprecated cost
+			const from = this.#cost;
 
-      // Writing the instance into the wrap element
-      if (inject) this.#wrap.pechatalka = this;
-    }
+			// Writing the value
+			this.#cost = value;
 
-    if (canvas instanceof HTMLElement) {
-      // Initialized the canvas element
+			// Filtering by the minimal value
+			if (this.#cost < 0) this.#cost = 0;
 
-      // Writing the canvas
-      this.#canvas = canvas;
-    }
+			// Processing the `cost changed` event function
+			this.#events.get("cost")?.get("changed")(this.#cost, from);
+		}
+	}
 
-    if (result instanceof HTMLElement) {
-      // Initialized the result element
+	/**
+	 * @name Cost (get)
+	 *
+	 * @description
+	 * The total cost
+	 *
+	 * @return {number}
+	 *
+	 * @public
+	 */
+	get cost() {
+		return this.#cost;
+	}
 
-      // Writing the result
-      this.#result = result;
-    }
-  }
+	/**
+	 * @name Prices
+	 *
+	 * @description
+	 * Prices for calculating the total cost
+	 *
+	 * @return {object}
+	 *
+	 * @public
+	 */
+	prices = {
+		pin: {
+			image: 150,
+		},
+	};
 
-  /**
-   * @name Moving
-   *
-   * @description
-   * Add moving for the target
-   *
-   * @param {HTMLElement} target
-   */
-  moving(target) {
-    // Initializing the link to the canvas
-    const canvas = this.#canvas;
+	/**
+	 * @name Events
+	 *
+	 * @type {Map}
+	 *
+	 * @protected
+	 */
+	#events = new Map([
+		["layers", new Map([["create", (layer) => {}]])],
+		["cost", new Map([["changed", (to, from) => {}]])],
+	]);
 
-    // Initializing the start moving cursor coordinates buffer
-    const from = { x: 0, y: 0 };
+	/**
+	 * @name Events (get)
+	 *
+	 * @type {Map}
+	 *
+	 * @public
+	 */
+	get events() {
+		return this.#events;
+	}
 
-    /**
-     * @name Moving
-     */
-    function moving(event) {
-      // Writing the X coordinate
-      target.style.left = event.clientX - from.x + "px";
+	/**
+	 * @name Constructor
+	 *
+	 * @description
+	 * Initialize the instance of Pechatalka
+	 *
+	 * @param {HTMLElement} wrap The wrap element
+	 * @param {HTMLElement} canvas The canvas element
+	 * @param {HTMLElement} result The result element
+	 * @param {(Map|null)} [preset=null] Preset parameters for layers
+	 * @param {boolean} [inject=false] Write the instance into the wrap element?
+	 */
+	constructor(wrap, canvas, result, preset, inject = false) {
+		if (wrap instanceof HTMLElement) {
+			// Initialized the wrap element
 
-      // Writing the Y coordinate
-      target.style.top = event.clientY - from.y + "px";
-    }
+			// Writing the wrap
+			this.#wrap = wrap;
 
-    /**
-     * @name Restore
-     */
-    function restore() {
-      // Restoring initial coordinates
-      target.style.top = target.style.left = null;
-    }
+			// Writing the instance into the wrap element
+			if (inject) this.#wrap.pechatalka = this;
+		}
 
-    /**
-     * @name Start
-     */
-    function start(event) {
-      if (event.button === 0) {
-        // Pressed the main mouse button (left by default)
+		if (canvas instanceof HTMLElement) {
+			// Initialized the canvas element
 
-        // Writing the start moving cursor coordinates
-        [from.x, from.y] = [
-          event.clientX - (parseInt(target.style.left) || 0),
-          event.clientY - (parseInt(target.style.top) || 0)
-        ];
+			// Writing the canvas
+			this.#canvas = canvas;
+		}
 
-        // Initializing the event listener
-        window.addEventListener("mousemove", moving, true);
-      }
-    }
+		if (result instanceof HTMLElement) {
+			// Initialized the result element
 
-    /**
-     * @name End
-     */
-    function end() {
-      // Initializing the event listener
-      window.removeEventListener("mousemove", moving, true);
-    }
+			// Writing the result
+			this.#result = result;
+		}
 
-    // Initializing event listeners
-    target.addEventListener("mousedown", start, false);
-    window.addEventListener("mouseup", end, false);
-    canvas.addEventListener("mouseleave", end, false);
-  }
+		if (preset instanceof Map) {
+			// Received the preset registry
 
-  /**
-   * @name Scaling
-   *
-   * @description
-   * Add resizing for the target
-   *
-   * 1. Resizing by changing the `scale` parameter disables the buttons visibility
-   * outside the cut borders (`overflow: fixed` did not work)
-   *
-   * 2. Resizing by changing the `width` parameter has problems with boundaries,
-   * that is it has movement glitches
-   *
-   * @param {HTMLElement} target
-   * @param {string} [type='scale'] Type of scaling (scale, width)
-   */
-  scaling(target, type = "scale") {
-    /**
-     * @name Scroll
-     */
-    function scroll(event) {
-      if (type === "scale") {
-        // Scaling by changing scale
+			// Writing the preset registry
+			this.#preset = preset;
+		}
+	}
 
-        // Initializing new scale
-        let scale = (parseFloat(target.style.scale) || 1) + event.deltaY / 1000;
+	/**
+	 * @name Global
+	 *
+	 * @description
+	 * Write the parameter into all layers
+	 *
+	 * @param {string} name Name of the parameter
+	 * @param {(Object|string|number|boolean|null)} [value=null] Value of the parameter
+	 * @param {boolean} [preset=false] Reinitialize the parameter in the preset registry?
+	 */
+	global(name, value = null, preset = false) {
+		if (typeof name === "string") {
+			// Received required arguments
 
-        // Normalization and protection against out of scale boundaries
-        if (scale < 0.4) scale = 0.4;
-        else if (scale > 3) scale = 3;
+			for (const layer of this.#layers) {
+				// Iterating over layers
 
-        // Writing the scale
-        target.style.scale = scale;
-      } else if (type === "width") {
-        // Scaling by changing width
+				// Reinitializing the layer parameter
+				layer.set(name, value);
+			}
 
-        // Initializing the zoom changing value
-        const change = event.deltaY / 2;
+			if (preset) {
+				// Requested to reinitialize the parameter in the preset registry
 
-        // Initializing width of the cut space
-        const cut = target.parentElement.offsetWidth;
+				// Writing the parameter into the preset registry
+				this.#preset.set(name, value);
+			}
+		}
+	}
 
-        // Initializing bounds for zooming
-        const bounds = {
-          minimum: cut / 2 - cut,
-          maximum: cut * 2 - cut
-        };
+	/**
+	 * @name Moving
+	 *
+	 * @description
+	 * Add moving for the layer
+	 *
+	 * @param {layer} layer
+	 */
+	moving(layer) {
+		// Initializing the start moving cursor coordinates buffer
+		const from = { x: 0, y: 0 };
 
-        // Initializing new scale
-        let zoom =
-          (parseFloat(target.style.getPropertyValue("--width-zoom")) || 0) +
-          change;
+		/**
+		 * @name Moving
+		 */
+		function moving(event) {
+			// Writing the X coordinate
+			layer.wrap.style.left = event.clientX - from.x + "px";
 
-        if (zoom < bounds.minimum) zoom = bounds.minimum;
-        else if (zoom > bounds.maximum) zoom = bounds.maximum;
-        else {
-          // The layer scale was changed
+			// Writing the Y coordinate
+			layer.wrap.style.top = event.clientY - from.y + "px";
+		}
 
-          // Writing the X coordinate
-          target.style.left =
-            (parseInt(target.style.left) || 0) - change / 2 + "px";
+		/**
+		 * @name Restore
+		 */
+		function restore() {
+			// Restoring initial coordinates
+			layer.wrap.style.top = layer.wrap.style.left = null;
+		}
 
-          // Writing the Y coordinate
-          target.style.top =
-            (parseInt(target.style.top) || 0) - change / 2 + "px";
-        }
+		/**
+		 * @name Start
+		 */
+		function start(event) {
+			if (event.button === 0) {
+				// Pressed the main mouse button (left by default)
 
-        // Writing the scale
-        target.style.setProperty("--width-zoom", zoom + "px");
-      }
-    }
+				// Writing the start moving cursor coordinates
+				[from.x, from.y] = [
+					event.clientX - (parseInt(layer.wrap.style.left) || 0),
+					event.clientY - (parseInt(layer.wrap.style.top) || 0),
+				];
 
-    // Initializing the even listeners
-    target.addEventListener("wheel", scroll, false);
-  }
+				// Initializing the event listener
+				window.addEventListener("mousemove", moving, true);
+			}
+		}
 
-  /**
-   * @name Image
-   *
-   * @description
-   * Add the image into the canvas
-   *
-   * @param {File} file The file from input FileList
-   */
-  image(file) {
-    // Initializing identifier
-    const identifier = this.#layers.entries.length ?? 1;
+		/**
+		 * @name End
+		 */
+		function end() {
+			// Initializing the event listener
+			window.removeEventListener("mousemove", moving, true);
+		}
 
-    // Creating the layer <div> element
-    const layer = document.createElement("div");
-    layer.classList.add("layer");
-    layer.setAttribute("id", "pechatalka_layer_" + identifier);
+		// Initializing event listeners
+		layer.wrap.addEventListener("mousedown", start, false);
+		window.addEventListener("mouseup", end, false);
+		this.#canvas.addEventListener("mouseleave", end, false);
+	}
 
-    // Creating the button <button> element
-    const button_delete = document.createElement("button");
-    button_delete.classList.add("delete", "rounded");
-    button_delete.addEventListener("click", (event) => {
-      // Deleting the wrap
-      layer.remove();
+	/**
+	 * @name Scaling
+	 *
+	 * @description
+	 * Add resizing for the layer
+	 *
+	 * 1. Resizing by changing the `scale` parameter disables the buttons visibility
+	 * outside the cut borders (`overflow: fixed` did not work)
+	 *
+	 * 2. Resizing by changing the `width` parameter has problems with boundaries,
+	 * that is it has movement glitches
+	 *
+	 * @param {layer} layer
+	 * @param {string} [type='scale'] Type of scaling (scale, width)
+	 */
+	scaling(layer, type = "scale") {
+		/**
+		 * @name Scroll
+		 */
+		function scroll(event) {
+			if (type === "scale") {
+				// Scaling by changing scale
 
-      // Removing from the total cost
-      this.#cost -= this.prices.pin.image ?? 0;
+				// Initializing new scale
+				let scale = (parseFloat(layer.wrap.style.scale) || 1) +
+					event.deltaY / 1000;
 
-      // Writing the total cost into the document
-      this.#result.querySelector(".cost").innerText = this.#cost;
-    });
+				// Normalization and protection against out of scale boundaries
+				if (scale < 0.4) scale = 0.4;
+				else if (scale > 3) scale = 3;
 
-    // Creating the trash icon <i> element
-    const trash = document.createElement("i");
-    trash.classList.add("icon", "trash");
+				// Writing the scale
+				layer.wrap.style.scale = scale;
+			} else if (type === "width") {
+				// Scaling by changing width
 
-    // Creating the image <img> element
-    const image = document.createElement("img");
-    image.classList.add("rounded");
-    image.setAttribute("draggable", false);
-    image.setAttribute("src", URL.createObjectURL(file));
+				// Initializing the zoom changing value
+				const change = event.deltaY / 1.5;
 
-    // Writing into the gallery
-    layer.appendChild(image);
-    button_delete.appendChild(trash);
-    layer.appendChild(button_delete);
-    this.#canvas.appendChild(layer);
+				// Initializing width of the cut space
+				const cut = target.parentElement.offsetWidth;
 
-    // Adding to the total cost
-    this.#cost += this.prices.pin.image ?? 0;
+				// Initializing bounds for zooming
+				const bounds = {
+					minimum: cut / 1.5 - cut,
+					maximum: cut * 1.5 - cut,
+				};
 
-    // Writing the total cost into the document
-    this.#result.querySelector(".cost").innerText = this.#cost;
+				// Initializing new scale
+				let zoom =
+					(parseFloat(layer.wrap.style.getPropertyValue("--width-zoom")) ||
+						0) +
+					change;
 
-    // Adding moving for the layer
-    this.moving(layer);
+				if (zoom < bounds.minimum) zoom = bounds.minimum;
+				else if (zoom > bounds.maximum) zoom = bounds.maximum;
+				else {
+					// The layer scale was changed
 
-    // Adding scaling for the layer
-    this.scaling(layer);
-  }
+					// Writing the X coordinate
+					layer.wrap.style.left = (parseInt(layer.wrap.style.left) || 0) -
+						change / 2 +
+						"px";
+
+					// Writing the Y coordinate
+					layer.wrap.style.top = (parseInt(layer.wrap.style.top) || 0) -
+						change / 2 +
+						"px";
+				}
+
+				// Writing the scale
+				layer.wrap.style.setProperty("--width-zoom", zoom + "px");
+			}
+		}
+
+		// Initializing the even listeners
+		layer.wrap.addEventListener("wheel", scroll, false);
+	}
+
+	/**
+	 * @name Image
+	 *
+	 * @description
+	 * Generate and write the image into the canvas
+	 *
+	 * @param {File} file The file from input FileList
+	 * @param {number} [cost=0] The layer cost
+	 */
+	image(file, cost = 0) {
+		// Initializing identifier
+		const identifier = this.#layers.size + 1;
+
+		// Creating the layer wrap <div> element
+		const wrap = document.createElement("div");
+		wrap.classList.add("layer");
+		wrap.setAttribute("id", "pechatalka_layer_" + identifier);
+
+		// Creating the button <button> element
+		const button_delete = document.createElement("button");
+		button_delete.classList.add("delete");
+
+		// Creating the trash icon <i> element
+		const trash = document.createElement("i");
+		trash.classList.add("icon", "trash");
+
+		// Creating the image <img> element
+		const image = document.createElement("img");
+		image.setAttribute("draggable", false);
+		image.setAttribute("src", URL.createObjectURL(file));
+
+		// Writing into the gallery
+		wrap.appendChild(image);
+		button_delete.appendChild(trash);
+		wrap.appendChild(button_delete);
+		this.#canvas.appendChild(wrap);
+
+		// Initializing the layer instance
+		const instance = new layer(
+			"image",
+			cost,
+			wrap,
+			image,
+			{
+				delete: button_delete,
+			},
+			this.#preset,
+		);
+
+		// Writing into the layers registry
+		this.#layers.add(instance);
+
+		// Processing the `layer create` event function
+		this.#events.get("layers")?.get("create")(instance);
+
+		// Adding to the total cost
+		this.cost += instance.cost;
+
+		// Adding moving for the layer
+		this.moving(instance);
+
+		// Adding scaling for the layer
+		this.scaling(instance);
+
+		// Initializing the event listener function
+		button_delete.addEventListener("click", (event) => {
+			// Deleting the layer root element
+			instance.wrap.remove();
+
+			// Deleting from the layer registry
+			this.#layers.delete(instance);
+
+			// Substraction from the total cost
+			this.cost -= instance.cost;
+		});
+	}
+}
+
+export class layer {
+	/**
+	 * @name Type
+	 *
+	 * @description
+	 * The layr type
+	 *
+	 * @type {string}
+	 *
+	 * @protected
+	 */
+	#type;
+
+	/**
+	 * @name Type (set)
+	 *
+	 * @description
+	 * The layr type
+	 *
+	 * @public
+	 */
+	set type(value) {
+		// Initializing types of layers
+		const types = new Set(["image", "film"]);
+
+		// Writing the value
+		if (types.has(value)) this.#type = value;
+	}
+
+	/**
+	 * @name Type (get)
+	 *
+	 * @description
+	 * The layr type
+	 *
+	 * @return {string}
+	 *
+	 * @public
+	 */
+	get type() {
+		// Exit (success)
+		return this.#type;
+	}
+
+	/**
+	 * @name Cost
+	 *
+	 * @description
+	 * The layr cost
+	 *
+	 * @type {number}
+	 *
+	 * @protected
+	 */
+	#cost = 0;
+
+	/**
+	 * @name Cost (set)
+	 *
+	 * @description
+	 * The layer cost
+	 *
+	 * @return {number}
+	 *
+	 * @public
+	 */
+	set cost(value) {
+		if (typeof value === "number") {
+			// Validated the value
+
+			// Initializing the deprecated cost
+			const from = this.#cost;
+
+			// Writing the value
+			this.#cost = value;
+
+			// Filtering by the minimal value
+			if (this.#cost < 0) this.#cost = 0;
+
+			// Processing the `cost changed` event function
+			this.#events.get("cost")?.get("changed")(from, this.#cost);
+		}
+	}
+
+	/**
+	 * @name Cost (get)
+	 *
+	 * @description
+	 * The layer cost
+	 *
+	 * @return {number}
+	 *
+	 * @public
+	 */
+	get cost() {
+		return this.#cost;
+	}
+
+	/**
+	 * @name Wrap
+	 *
+	 * @description
+	 * The layer root element
+	 *
+	 * @type {HTMLElement}
+	 *
+	 * @protected
+	 */
+	#wrap;
+
+	/**
+	 * @name Wrap (get)
+	 *
+	 * @description
+	 * The layer root element
+	 *
+	 * @return {HTMLElement}
+	 *
+	 * @public
+	 */
+	get wrap() {
+		return this.#wrap;
+	}
+
+	/**
+	 * @name Content
+	 *
+	 * @description
+	 * The layer target content element
+	 *
+	 * @type {HTMLElement}
+	 *
+	 * @protected
+	 */
+	#content;
+
+	/**
+	 * @name Content (get)
+	 *
+	 * @description
+	 * The layer target content element
+	 *
+	 * @return {HTMLElement}
+	 *
+	 * @public
+	 */
+	get content() {
+		return this.#content;
+	}
+
+	/**
+	 * @name Buttons
+	 *
+	 * @description
+	 * The layer buttons elements registry
+	 *
+	 * @type {Map}
+	 *
+	 * @protected
+	 */
+	#buttons = new Map();
+
+	/**
+	 * @name Buttons (get)
+	 *
+	 * @description
+	 * The layer buttons elements registry
+	 *
+	 * @type {Map}
+	 *
+	 * @public
+	 */
+	get buttons() {
+		return this.#buttons;
+	}
+
+	/**
+	 * @name Events
+	 *
+	 * @type {Map}
+	 *
+	 * @protected
+	 */
+	#events = new Map([
+		["cost", new Map([["changed", (to, from) => {}]])],
+	]);
+
+	/**
+	 * @name Events (get)
+	 *
+	 * @type {Map}
+	 *
+	 * @public
+	 */
+	get events() {
+		return this.#events;
+	}
+
+	/**
+	 * @name Constructor
+	 *
+	 * @description
+	 * Initialize the instance of the layer
+	 *
+	 * @param {string} type The layer type
+	 * @param {number} cost The layer cost
+	 * @param {HTMLElement} wrap The layer root element
+	 * @param {HTMLElement} content The layer target content element
+	 * @param {object} buttons The layer buttons elements
+	 * @param {Map} preset Preset parameters
+	 * @param {boolean} [inject=false] Write the instance into the element?
+	 */
+	constructor(type, cost, wrap, content, buttons, preset, inject = false) {
+		// Writing the layer type
+		this.type = type;
+
+		if (typeof this.#type === "string") {
+			// Initialized the layer type
+
+			// Writing the layer cost
+			this.cost = cost;
+
+			if (wrap instanceof HTMLElement) {
+				// Received the layer root element
+
+				// Writing the layer root element
+				this.#wrap = wrap;
+
+				// Writing the instance into the layer root element
+				if (inject) this.#wrap.layer = this;
+			}
+
+			if (content instanceof HTMLElement) {
+				// Received the layer target content element
+
+				// Writing the layer target content element
+				this.#content = content;
+			}
+
+			if (buttons instanceof Object) {
+				// Received the layer buttons elements
+
+				for (const [name, element] of Object.entries(buttons)) {
+					// Iterating over the layers buttons elements
+
+					// Writing into the layer buttons registry
+					this.#buttons.set(name, element);
+				}
+			}
+
+			for (const [name, value] of preset.entries()) {
+				// Iterating over preset parameters
+
+				// Writing the parameter
+				this[name] = value;
+			}
+		}
+	}
+
+	/**
+	 * @name Set
+	 *
+	 * @description
+	 * Set the parameter value
+	 *
+	 * @param {string} name Name of the parameter
+	 * @param {(Object|string|number|boolean|null)} value Value of the parameter
+	 *
+	 * @return {boolean} The new parameter value
+	 */
+	set(name, value) {
+		// Initializing the old parameter value
+		const from = this[name];
+
+		// Writing the value
+		this[name] = value;
+
+		// Processing the parameter `set` event function
+		this.#events.get(name)?.get("set")(this[name], from);
+
+		// Exit (success)
+		return this[name];
+	}
+
+	/**
+	 * @name Toggle
+	 *
+	 * @description
+	 * Toggle the parameter valu
+	 *
+	 * @param {string} name Name of the parameter
+	 *
+	 * @return {boolean} The new parameter value
+	 */
+	toggle(name) {
+		// Writing the value
+		this[name] = !this[name] ?? true;
+
+		// Processing the parameter `toggle` event function
+		this.#events.get(name)?.get("toggle")(this[name]);
+
+		// Exit (success)
+		return this[name];
+	}
 }
