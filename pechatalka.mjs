@@ -227,6 +227,18 @@ export default class pechatalka {
 	}
 
 	/**
+	 * @name Control
+	 *
+	 * The CONTROL button press status
+	 *
+	 * @type {boolean}
+	 *
+	 * @protected
+	 */
+	#control = false;
+
+
+	/**
 	 * @name Constructor
 	 *
 	 * @description
@@ -269,6 +281,53 @@ export default class pechatalka {
 			// Writing the preset registry
 			this.#preset = preset;
 		}
+
+		//
+		const instance = this;
+
+		//
+		let start = 1000;
+
+		//
+		const decrease = 2;
+
+		// Initializing timeouts identifiers for detecting holding buttons
+		let control;
+
+		const control_pressed = function () {
+			instance.#control = true;
+
+			clearTimeout(control);
+			control = setTimeout(control_pressed, start);
+			start = start / decrease;
+    }
+
+		window.addEventListener('keydown', function(event) {
+			if (event.keyCode === 17) {
+				// Control
+
+			  //
+				control_pressed();
+			}
+		});
+
+		//
+		window.addEventListener('keyup', function(event) {
+			if (event.keyCode === 17) {
+				// Control
+			 
+				//
+				clearTimeout(control);
+
+				//
+				instance.#control = false;
+			}
+		});
+
+
+		/* setInterval(function() {
+			console.log(instance.#control);
+		}, 1000); */
 	}
 
 	/**
@@ -380,6 +439,9 @@ export default class pechatalka {
 	 * @param {string} [type='scale'] Type of scaling (scale, width)
 	 */
 	scaling(layer, type = "scale") {
+		// Initializing the link to the instance
+		const instance = this;
+
 		/**
 		 * @name Scroll
 		 */
@@ -387,13 +449,33 @@ export default class pechatalka {
 			if (type === "scale") {
 				// Scaling by changing scale
 
-				// Initializing new scale
-				let scale = (parseFloat(layer.wrap.style.scale) || 1) +
-					event.deltaY / 1000;
+				if ([...instance.#layers].find(layer => layer.wrap === event.target.parentElement)) {
+					// Cursor above the layer
+
+					//
+					event.preventDefault();
+				}
+
+				// Declaring the new scale
+				let scale;
+
+				if (instance.#control) {
+					// Pressed the "control" button
+
+					// Initializing the new scale
+					scale = (parseFloat(layer.wrap.style.scale) || 1) +
+						event.deltaY / 5000;
+				} else {
+					// Not pressed the "control" button
+
+					// Initializing the new scale
+					scale = (parseFloat(layer.wrap.style.scale) || 1) +
+						event.deltaY / 1200;
+				}
 
 				// Normalization and protection against out of scale boundaries
-				if (scale < 0.4) scale = 0.4;
-				else if (scale > 3) scale = 3;
+				if (scale < 0.3) scale = 0.3;
+				else if (scale > 6) scale = 6;
 
 				// Writing the scale
 				layer.wrap.style.scale = scale;
@@ -408,8 +490,8 @@ export default class pechatalka {
 
 				// Initializing bounds for zooming
 				const bounds = {
-					minimum: cut / 1.5 - cut,
-					maximum: cut * 1.5 - cut,
+					minimum: cut / 1 - cut,
+					maximum: cut * 1 - cut,
 				};
 
 				// Initializing new scale
@@ -454,7 +536,7 @@ export default class pechatalka {
 	 */
 	image(file, cost = 0) {
 		// Initializing identifier
-		const identifier = this.#layers.size + 1;
+		const identifier = this.#layers.size + 0;
 
 		// Creating the layer wrap <div> element
 		const wrap = document.createElement("div");
