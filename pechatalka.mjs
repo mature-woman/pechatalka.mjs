@@ -281,11 +281,10 @@ export default class pechatalka {
 			// Writing the preset registry
 			this.#preset = preset;
 		}
+	}
 
-		//
-		const instance = this;
-
-		//
+	keyboard() {
+		// 
 		let start = 1000;
 
 		//
@@ -295,12 +294,12 @@ export default class pechatalka {
 		let control;
 
 		const control_pressed = function () {
-			instance.#control = true;
+			this.#control = true;
 
 			clearTimeout(control);
 			control = setTimeout(control_pressed, start);
 			start = start / decrease;
-    }
+    }.bind(this);
 
 		window.addEventListener('keydown', function(event) {
 			if (event.keyCode === 17) {
@@ -309,7 +308,7 @@ export default class pechatalka {
 			  //
 				control_pressed();
 			}
-		});
+		}.bind(this));
 
 		//
 		window.addEventListener('keyup', function(event) {
@@ -320,14 +319,49 @@ export default class pechatalka {
 				clearTimeout(control);
 
 				//
-				instance.#control = false;
+				this.#control = false;
 			}
-		});
+		}.bind(this));
+	}
 
+	dragdrop() {
+		//
+		document.addEventListener('dragover', (event) =>	event.preventDefault());
+		document.addEventListener('drop', (event) =>	event.preventDefault());
 
-		/* setInterval(function() {
-			console.log(instance.#control);
-		}, 1000); */
+		//
+		this.#canvas.addEventListener("dragover", function() {
+			// Adding the drag class
+			this.#canvas.classList.add("drag");
+		}.bind(this));
+
+		//
+		this.#canvas.addEventListener("dragleave", function() {
+			// Removing the drag class
+			this.#canvas.classList.remove("drag");
+		}.bind(this));
+
+		this.#canvas.addEventListener("drop", function() {
+			// Removing the drag class
+			this.#canvas.classList.remove("drag");
+
+			// Initializing transfered files
+			const files = event.dataTransfer?.files;
+
+			if (files.length > 0) {
+				// Initialized transfered files
+
+				[...files].forEach((file) => {
+					console.log(file);
+					if (file?.type.startsWith("image/")) {
+						// Image
+
+						// Writing the image
+						this.image(file);
+					} 
+				});
+			}
+		}.bind(this));
 	}
 
 	/**
@@ -369,6 +403,9 @@ export default class pechatalka {
 	 * @param {layer} layer
 	 */
 	moving(layer) {
+		// Declaring the difference between the canvas and the layer
+		let difference;
+
 		// Initializing the start moving cursor coordinates buffer
 		const from = { x: 0, y: 0 };
 
@@ -377,7 +414,7 @@ export default class pechatalka {
 		 */
 		function moving(event) {
 			// Writing the X coordinate
-			layer.wrap.style.left = event.clientX - from.x + "px";
+			layer.wrap.style.left = event.clientX - from.x  + "px";
 
 			// Writing the Y coordinate
 			layer.wrap.style.top = event.clientY - from.y + "px";
@@ -395,13 +432,19 @@ export default class pechatalka {
 		 * @name Start
 		 */
 		function start(event) {
+			 // Calculating the difference between the canvas and the layer
+			 difference ??= { 
+				 width: this.#canvas.offsetWidth - layer.wrap.offsetWidth, 
+				 height: this.#canvas.offsetHeight - layer.wrap.offsetHeight
+			 };
+
 			if (event.button === 0) {
 				// Pressed the main mouse button (left by default)
 
 				// Writing the start moving cursor coordinates
 				[from.x, from.y] = [
-					event.clientX - (parseInt(layer.wrap.style.left) || 0),
-					event.clientY - (parseInt(layer.wrap.style.top) || 0),
+					event.clientX - (parseInt(layer.wrap.style.left) || (difference.width > 0 ? difference.width / 2 : 0)),
+					event.clientY - (parseInt(layer.wrap.style.top) || (difference.height > 0 ? difference.height / 2 : 0)),
 				];
 
 				// Initializing the event listener
@@ -418,9 +461,9 @@ export default class pechatalka {
 		}
 
 		// Initializing event listeners
-		layer.wrap.addEventListener("mousedown", start, false);
+		layer.wrap.addEventListener("mousedown", start.bind(this), false);
 		window.addEventListener("mouseup", end, false);
-		this.#canvas.addEventListener("mouseleave", end, false);
+		// this.#canvas.addEventListener("mouseleave", end, false);
 	}
 
 	/**
@@ -551,9 +594,12 @@ export default class pechatalka {
 		const trash = document.createElement("i");
 		trash.classList.add("icon", "trash");
 
+		//icon CLOSE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! and ROUND
+
 		// Creating the image <img> element
 		const image = document.createElement("img");
 		image.setAttribute("draggable", false);
+		image.setAttribute("ondragstart", 'return false;');
 		image.setAttribute("src", URL.createObjectURL(file));
 
 		// Writing into the gallery
@@ -561,6 +607,18 @@ export default class pechatalka {
 		button_delete.appendChild(trash);
 		wrap.appendChild(button_delete);
 		this.#canvas.appendChild(wrap);
+
+		setTimeout(() => {
+			// Calculating the difference between the canvas and the layer wrap
+		  const difference = { 
+			  width: this.#canvas.offsetWidth - wrap.offsetWidth, 
+			  height: this.#canvas.offsetHeight - wrap.offsetHeight
+		  };
+		
+			// Writing the difference CSS variable into the layer
+			wrap.style.setProperty('left', (difference.width > 0 ? difference.width / 2 : 0) + 'px');
+			wrap.style.setProperty('top', (difference.height > 0 ? difference.height / 2 : 0) + 'px');
+		}, 60);
 
 		// Initializing the layer instance
 		const instance = new layer(
